@@ -1,30 +1,50 @@
-FROM debian:bullseye-slim
+FROM ubuntu:22.04
 
-# Установка зависимостей
-RUN apt-get update && apt-get install -y --no-install-recommends \
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
     git \
     build-essential \
     cmake \
     ffmpeg \
+    python3 \
+    python3-pip \
+    python3-venv \
+    libsndfile1 \
+    libavdevice-dev \
+    libavfilter-dev \
+    libavformat-dev \
+    libavcodec-dev \
+    libswresample-dev \
+    libswscale-dev \
     curl \
-    ca-certificates \
-    && apt-get clean \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Клонируем whisper.cpp и собираем
-WORKDIR /app
-RUN git clone https://github.com/ggerganov/whisper.cpp.git
+# Clone whisper.cpp
+RUN git clone https://github.com/ggerganov/whisper.cpp.git /app/whisper.cpp
+
 WORKDIR /app/whisper.cpp
-RUN mkdir -p build && cd build && cmake .. && make -j
 
-# Скачиваем многоязычную модель (русский поддерживается)
-RUN mkdir -p /app/whisper.cpp/models && \
-    curl -L -o /app/whisper.cpp/models/ggml-tiny.bin \
-    https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
+# Build whisper.cpp
+RUN mkdir -p build && cd build && \
+    cmake .. && \
+    make -j
 
-# Копируем скрипт внутрь
-COPY run_whisper.sh /app/run_whisper.sh
-RUN chmod +x /app/run_whisper.sh
+# Download tiny model using repo script
+RUN ./models/download-ggml-model.sh tiny
 
-# Команда по умолчанию
-ENTRYPOINT ["/app/run_whisper.sh"]
+WORKDIR /app
+
+COPY requirements.txt /app/
+
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy bot files
+COPY bot.py /app/
+
+# Verify model exists and is valid
+RUN ls -la /app/whisper.cpp/models/ggml-tiny.bin && \
+    test -s /app/whisper.cpp/models/ggml-tiny.bin
+
+CMD ["python3", "/app/bot.py"]
