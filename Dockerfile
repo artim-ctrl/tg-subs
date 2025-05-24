@@ -31,8 +31,8 @@ RUN mkdir -p build && cd build && \
     cmake .. && \
     make -j
 
-# Download small model using repo script (better accuracy than tiny)
-RUN ./models/download-ggml-model.sh small
+# Download tiny model using repo script
+RUN ./models/download-ggml-model.sh tiny
 
 WORKDIR /app
 
@@ -44,7 +44,7 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 COPY bot.py /app/
 
 # Verify model exists and is valid
-RUN ls -la /app/whisper.cpp/models/ggml-small.bin && \
-    test -s /app/whisper.cpp/models/ggml-small.bin
+RUN ls -la /app/whisper.cpp/models/ggml-tiny.bin && \
+    test -s /app/whisper.cpp/models/ggml-tiny.bin
 
 CMD ["python3", "/app/bot.py"]

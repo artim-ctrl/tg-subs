@@ -20,7 +20,7 @@ def process_whisper(input_file):
     wav_path = f"/data/{basename}.wav"
     output_base = f"/data/{basename}"
     subtitled_path = f"/data/{basename}_subtitled.mp4"
-    model = "/app/whisper.cpp/models/ggml-small.bin"
+    model = "/app/whisper.cpp/models/ggml-tiny.bin"
     
     # Check if model exists
     if not os.path.exists(model):
