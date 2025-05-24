@@ -17,6 +17,6 @@ ffmpeg -y -i "$INPUT" -ar 16000 -ac 1 -c:a pcm_s16le "$WAV"
 
 # Распознаём
 echo "[*] Transcribing with whisper.cpp..."
-/app/whisper.cpp/build/bin/whisper-cli -m "$MODEL" -f "$WAV" -of "/data/${BASENAME}" -otxt -osrt
+/app/whisper.cpp/build/bin/whisper-cli -m "$MODEL" -l ru -f "$WAV" -of "/data/${BASENAME}" -otxt -osrt
 
 echo "[*] Done. Output: /data/${BASENAME}.srt and .txt"

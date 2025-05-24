@@ -1,32 +1,30 @@
-# syntax=docker/dockerfile:1
 FROM debian:bullseye-slim
 
 # Установка зависимостей
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     build-essential \
     cmake \
     ffmpeg \
-    wget \
     curl \
     ca-certificates \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Клонируем и собираем whisper.cpp
+# Клонируем whisper.cpp и собираем
 WORKDIR /app
 RUN git clone https://github.com/ggerganov/whisper.cpp.git
 WORKDIR /app/whisper.cpp
-RUN make
+RUN mkdir -p build && cd build && cmake .. && make -j
 
-# Скачиваем tiny модель
-RUN ./models/download-ggml-model.sh tiny
+# Скачиваем многоязычную модель (русский поддерживается)
+RUN mkdir -p /app/whisper.cpp/models && \
+    curl -L -o /app/whisper.cpp/models/ggml-tiny.bin \
+    https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
 
-# Копируем скрипт запуска
-WORKDIR /app
-COPY run_whisper.sh .
+# Копируем скрипт внутрь
+COPY run_whisper.sh /app/run_whisper.sh
+RUN chmod +x /app/run_whisper.sh
 
-# Разрешаем выполнение
-RUN chmod +x run_whisper.sh
-
-# Точка входа
+# Команда по умолчанию
 ENTRYPOINT ["/app/run_whisper.sh"]
