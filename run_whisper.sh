@@ -19,4 +19,7 @@ ffmpeg -y -i "$INPUT" -ar 16000 -ac 1 -c:a pcm_s16le "$WAV"
 echo "[*] Transcribing with whisper.cpp..."
 /app/whisper.cpp/build/bin/whisper-cli -m "$MODEL" -l ru -f "$WAV" -of "/data/${BASENAME}" -otxt -osrt
 
-echo "[*] Done. Output: /data/${BASENAME}.srt and .txt"
+echo "[*] Embedding subtitles into video..."
+ffmpeg -y -i "$INPUT" -vf "subtitles='/data/${BASENAME}.srt':force_style='FontName=Arial,FontSize=20,Outline=1,Shadow=1,MarginV=20'" -c:a copy "/data/${BASENAME}_subtitled.mp4"
+
+echo "[*] Done. Output: /data/${BASENAME}_subtitled.mp4"
