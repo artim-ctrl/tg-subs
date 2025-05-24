@@ -6,7 +6,7 @@ build:
 	docker build -t whisper-bot .
 
 run:
-	docker run --rm -v "$(shell pwd)/data:/data" -e BOT_TOKEN=${BOT_TOKEN} whisper-bot
+	docker run --rm -e BOT_TOKEN=${BOT_TOKEN} whisper-bot
 
 clean:
 	rm -f data/*.wav data/*.txt data/*.srt data/*.mp4
